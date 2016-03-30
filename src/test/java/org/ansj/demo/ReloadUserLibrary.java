@@ -2,6 +2,7 @@ package org.ansj.demo;
 
 import java.io.File;
 
+import org.ansj.dic.DicReader;
 import org.ansj.library.UserDefineLibrary;
 import org.nlpcn.commons.lang.tire.domain.Forest;
 import org.nlpcn.commons.lang.tire.library.Library;
@@ -34,7 +35,7 @@ public class ReloadUserLibrary {
 		// make new forest
 		Forest forest = new Forest();
 
-		UserDefineLibrary.loadFile(forest, new File("new_Library_Path"));
+		UserDefineLibrary.loadFile(forest, DicReader.getReader("new_Library_Path"));
 
 		// 将新构建的辞典树替换掉舊的。
 		UserDefineLibrary.FOREST = forest;

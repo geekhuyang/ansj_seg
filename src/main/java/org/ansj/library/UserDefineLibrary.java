@@ -2,12 +2,9 @@ package org.ansj.library;
 
 import static org.ansj.util.MyStaticValue.LIBRARYLOG;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 
+import org.ansj.dic.DicReader;
 import org.ansj.util.MyStaticValue;
 import org.nlpcn.commons.lang.tire.domain.Forest;
 import org.nlpcn.commons.lang.tire.domain.SmartForest;
@@ -41,7 +38,7 @@ public class UserDefineLibrary {
 	/**
 	 * 关键词增加
 	 * 
-	 * @param keyWord
+	 * @param keyword
 	 *            所要增加的关键词
 	 * @param nature
 	 *            关键词的词性
@@ -66,16 +63,15 @@ public class UserDefineLibrary {
 					"init ambiguity  warning :" + ambiguityLibrary + " because : file not found or failed to read !");
 			return;
 		}
-		ambiguityLibrary = MyStaticValue.ambiguityLibrary;
-		File file = new File(ambiguityLibrary);
-		if (file.isFile() && file.canRead()) {
+//		ambiguityLibrary = MyStaticValue.ambiguityLibrary;
+		InputStream ambiguityInputStream = DicReader.getInputStream(ambiguityLibrary);
+		if (ambiguityInputStream != null) {
+
 			try {
-				ambiguityForest = Library.makeForest(ambiguityLibrary);
+				ambiguityForest = Library.makeForest(ambiguityInputStream);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				LIBRARYLOG.warn("init ambiguity  error :" + new File(ambiguityLibrary).getAbsolutePath()
-						+ " because : not find that file or can not to read !");
-				e.printStackTrace();
+
+				LIBRARYLOG.error("error make ambiguity forest ! error message is " + e.getMessage());
 			}
 			LIBRARYLOG.info("init ambiguityLibrary ok!");
 		} else {
@@ -100,17 +96,17 @@ public class UserDefineLibrary {
 	}
 
 	// 单个文件加载词典
-	public static void loadFile(Forest forest, File file) {
-		if (!file.canRead()) {
-			LIBRARYLOG.warn("file in path " + file.getAbsolutePath() + " can not to read!");
+	public static void loadFile(Forest forest, BufferedReader bufferedReader) {
+		if (bufferedReader == null) {
+			LIBRARYLOG.warn("file in path can not to read!");
 			return;
 		}
 		String temp = null;
-		BufferedReader br = null;
+		BufferedReader br = bufferedReader;
 		String[] strs = null;
 		Value value = null;
 		try {
-			br = IOUtil.getReader(new FileInputStream(file), "UTF-8");
+//			br = IOUtil.getReader(new FileInputStream(file), "UTF-8");
 			while ((temp = br.readLine()) != null) {
 				if (StringUtil.isBlank(temp)) {
 					continue;
@@ -132,7 +128,7 @@ public class UserDefineLibrary {
 					Library.insertWord(forest, value);
 				}
 			}
-			LIBRARYLOG.info("init user userLibrary ok path is : " + file.getAbsolutePath());
+			LIBRARYLOG.info("init user userLibrary ok!!");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -148,21 +144,21 @@ public class UserDefineLibrary {
 	 */
 	public static void loadLibrary(Forest forest, String path) {
 		// 加载用户自定义词典
-		File file = null;
+		String rootDir = UserDefineLibrary.class.getResource("/").getPath();
+		File file = new File(rootDir + path);
 		if (path != null) {
-			file = new File(path);
-			if (!file.canRead() || file.isHidden()) {
-				LIBRARYLOG.warn("init userLibrary  warning :" + new File(path).getAbsolutePath()
-						+ " because : file not found or failed to read !");
-				return;
-			}
+
 			if (file.isFile()) {
-				loadFile(forest, file);
+				loadFile(forest, DicReader.getReader(path));
 			} else if (file.isDirectory()) {
 				File[] files = file.listFiles();
-				for (int i = 0; i < files.length; i++) {
-					if (files[i].getName().trim().endsWith(".dic")) {
-						loadFile(forest, files[i]);
+				if (files != null) {
+					for (File file1 : files) {
+						String fileName = file1.getName().trim();
+						if (fileName.endsWith(".dic")) {
+							LIBRARYLOG.info("---------- file path is " + fileName);
+							loadFile(forest, DicReader.getReader(path + fileName));
+						}
 					}
 				}
 			} else {

@@ -1,15 +1,11 @@
 package org.ansj.util;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -18,7 +14,6 @@ import org.ansj.app.crf.SplitWord;
 import org.ansj.dic.DicReader;
 import org.ansj.domain.AnsjItem;
 import org.ansj.library.DATDictionary;
-import org.nlpcn.commons.lang.util.FileFinder;
 import org.nlpcn.commons.lang.util.IOUtil;
 import org.nlpcn.commons.lang.util.StringUtil;
 import org.nlpcn.commons.lang.util.logging.Log;
@@ -54,7 +49,7 @@ public class MyStaticValue {
 	/**
 	 * 用户自定义词典的加载,如果是路径就扫描路径下的dic文件
 	 */
-	public static String userLibrary = "library/default.dic";
+	public static String userLibrary = "library/dics/default.dic";
 
 	public static String ambiguityLibrary = "library/ambiguity.dic";
 
@@ -69,35 +64,32 @@ public class MyStaticValue {
 		/**
 		 * 配置文件变量
 		 */
-		ResourceBundle rb = null;
+		Properties properties = new Properties();
 		try {
-			rb = ResourceBundle.getBundle("library");
-		} catch (Exception e) {
-			try {
-				File find = FileFinder.find("library.properties", 2);
-				if (find != null && find.isFile()) {
-					rb = new PropertyResourceBundle(IOUtil.getReader(find.getAbsolutePath(), System.getProperty("file.encoding")));
-					LIBRARYLOG.info("load library not find in classPath ! i find it in " + find.getAbsolutePath() + " make sure it is your config!");
-				}
-			} catch (Exception e1) {
-				LIBRARYLOG.warn("not find library.properties. and err " + e.getMessage() + " i think it is a bug!");
+			InputStream inputStream = DicReader.getInputStream("library.properties");
+			if (inputStream != null) {
+				properties.load(inputStream);
+			} else {
+				LIBRARYLOG.warn("library properties not find in classpath");
 			}
+
+		} catch (IOException e) {
+			LIBRARYLOG.warn("library properties not find in classpath");
 		}
 
-		if (rb == null) {
-			LIBRARYLOG.warn("not find library.properties in classpath use it by default !");
+		if (!properties.isEmpty()) {
+			if (properties.containsKey("userLibrary"))
+				userLibrary = properties.getProperty("userLibrary");
+			if (properties.containsKey("ambiguityLibrary"))
+				ambiguityLibrary = properties.getProperty("ambiguityLibrary");
+			if (properties.containsKey("isSkipUserDefine"))
+				isSkipUserDefine = Boolean.valueOf(properties.getProperty("isSkipUserDefine"));
+			if (properties.containsKey("isRealName"))
+				isRealName = Boolean.valueOf(properties.getProperty("isRealName"));
+			if (properties.containsKey("crfModel"))
+				crfModel = properties.getProperty("crfModel");
 		} else {
-
-			if (rb.containsKey("userLibrary"))
-				userLibrary = rb.getString("userLibrary");
-			if (rb.containsKey("ambiguityLibrary"))
-				ambiguityLibrary = rb.getString("ambiguityLibrary");
-			if (rb.containsKey("isSkipUserDefine"))
-				isSkipUserDefine = Boolean.valueOf(rb.getString("isSkipUserDefine"));
-			if (rb.containsKey("isRealName"))
-				isRealName = Boolean.valueOf(rb.getString("isRealName"));
-			if (rb.containsKey("crfModel"))
-				crfModel = rb.getString("crfModel");
+			LIBRARYLOG.warn("not find library.properties in classpath use it by default !");
 		}
 	}
 
@@ -286,7 +278,7 @@ public class MyStaticValue {
 			long start = System.currentTimeMillis();
 			LIBRARYLOG.info("begin init crf model!");
 			crfSplitWord = new SplitWord(Model.loadModel(crfModel));
-			LIBRARYLOG.info("load crf crf use time:" + (System.currentTimeMillis() - start));
+			LIBRARYLOG.info("load crf use time:" + (System.currentTimeMillis() - start));
 		} catch (Exception e) {
 			LIBRARYLOG.warn("!!!!!!!!!!  not find crf model you can run DownLibrary.main(null) to down !\n or you can visit http://maven.nlpcn.org/down/library.zip to down it ! ");
 
