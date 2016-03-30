@@ -19,6 +19,7 @@ import java.util.zip.GZIPOutputStream;
 import org.ansj.app.crf.pojo.Element;
 import org.ansj.app.crf.pojo.Feature;
 import org.ansj.app.crf.pojo.Template;
+import org.ansj.dic.DicReader;
 import org.nlpcn.commons.lang.tire.domain.SmartForest;
 
 public abstract class Model {
@@ -48,7 +49,8 @@ public abstract class Model {
 	/**
 	 * 根据模板文件解析特征
 	 * 
-	 * @param template
+	 * @param left int
+	 * @param right int
 	 * @throws IOException
 	 */
 	private void makeSide(int left, int right) throws IOException {
@@ -68,7 +70,7 @@ public abstract class Model {
 	/**
 	 * 讲模型写入
 	 * 
-	 * @param path
+	 * @param path string
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
@@ -106,15 +108,15 @@ public abstract class Model {
 	/**
 	 * 模型读取
 	 * 
-	 * @param path
-	 * @return
-	 * @return
+	 * @param modelPath string
+	 * @return Model
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
 	public static Model loadModel(String modelPath) throws Exception {
-		return loadModel(new FileInputStream(modelPath));
+//		return loadModel(new FileInputStream(modelPath));
+		return loadModel(DicReader.getInputStream(modelPath));
 
 	}
 
