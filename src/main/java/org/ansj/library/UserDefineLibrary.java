@@ -84,11 +84,16 @@ public class UserDefineLibrary {
 	 * 加载用户自定义词典和补充词典
 	 */
 	private static void initUserLibrary() {
+
 		try {
 			FOREST = new Forest();
 			// 加载用户自定义词典
-			String userLibrary = MyStaticValue.userLibrary;
-			loadLibrary(FOREST, userLibrary);
+			String userLibraryStr = MyStaticValue.userLibrary;
+			String[] userLibraries = userLibraryStr.split(",");
+			for (String userLibrary : userLibraries) {
+
+				loadLibrary(FOREST, userLibrary);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -96,13 +101,13 @@ public class UserDefineLibrary {
 	}
 
 	// 单个文件加载词典
-	public static void loadFile(Forest forest, BufferedReader bufferedReader) {
-		if (bufferedReader == null) {
+	public static void loadFile(Forest forest, BufferedReader br) {
+		if (br == null) {
 			LIBRARYLOG.warn("file in path can not to read!");
 			return;
 		}
 		String temp = null;
-		BufferedReader br = bufferedReader;
+		LIBRARYLOG.info("buffer is " + br);
 		String[] strs = null;
 		Value value = null;
 		try {
@@ -144,28 +149,33 @@ public class UserDefineLibrary {
 	 */
 	public static void loadLibrary(Forest forest, String path) {
 		// 加载用户自定义词典
+		LIBRARYLOG.info("input path is " + path);
 		String rootDir = UserDefineLibrary.class.getResource("/").getPath();
-		File file = new File(rootDir + path);
-		if (path != null) {
-
-			if (file.isFile()) {
-				loadFile(forest, DicReader.getReader(path));
-			} else if (file.isDirectory()) {
-				File[] files = file.listFiles();
-				if (files != null) {
-					for (File file1 : files) {
-						String fileName = file1.getName().trim();
-						if (fileName.endsWith(".dic")) {
-							LIBRARYLOG.info("---------- file path is " + fileName);
-							loadFile(forest, DicReader.getReader(path + fileName));
-						}
-					}
-				}
-			} else {
-				LIBRARYLOG.warn("init user library  error :" + new File(path).getAbsolutePath()
-						+ " because : not find that file !");
-			}
-		}
+		LIBRARYLOG.info("root dir is " + rootDir + ", path is " + path);
+		loadFile(forest, DicReader.getReader(path));
+//		LIBRARYLOG.info("path abs is " + DicReader.getInputStream(path));
+//		LIBRARYLOG.info("root dir is " + rootDir);
+//		File file = new File(rootDir + path);
+//		if (path != null) {
+//
+//			if (file.isFile()) {
+//				loadFile(forest, DicReader.getReader(path));
+//			} else if (file.isDirectory()) {
+//				File[] files = file.listFiles();
+//				if (files != null) {
+//					for (File file1 : files) {
+//						String fileName = file1.getName().trim();
+//						if (fileName.endsWith(".dic")) {
+//							LIBRARYLOG.info("---------- file path is " + fileName);
+//							loadFile(forest, DicReader.getReader(path + fileName));
+//						}
+//					}
+//				}
+//			} else {
+//				LIBRARYLOG.warn("init user library  error :" + new File(path).getAbsolutePath()
+//						+ " because : not find that file !");
+//			}
+//		}
 	}
 
 	/**
