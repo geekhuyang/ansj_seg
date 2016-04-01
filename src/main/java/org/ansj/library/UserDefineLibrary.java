@@ -107,11 +107,9 @@ public class UserDefineLibrary {
 			return;
 		}
 		String temp = null;
-		LIBRARYLOG.info("buffer is " + br);
 		String[] strs = null;
 		Value value = null;
 		try {
-//			br = IOUtil.getReader(new FileInputStream(file), "UTF-8");
 			while ((temp = br.readLine()) != null) {
 				if (StringUtil.isBlank(temp)) {
 					continue;
@@ -150,8 +148,6 @@ public class UserDefineLibrary {
 	public static void loadLibrary(Forest forest, String path) {
 		// 加载用户自定义词典
 		LIBRARYLOG.info("input path is " + path);
-		String rootDir = UserDefineLibrary.class.getResource("/").getPath();
-		LIBRARYLOG.info("root dir is " + rootDir + ", path is " + path);
 		loadFile(forest, DicReader.getReader(path));
 //		LIBRARYLOG.info("path abs is " + DicReader.getInputStream(path));
 //		LIBRARYLOG.info("root dir is " + rootDir);
